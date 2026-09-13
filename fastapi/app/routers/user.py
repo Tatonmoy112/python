@@ -1,4 +1,4 @@
-from app.routers import oauth2
+from .. import oauth2
 
 from .. import models, schemas, utils
 from fastapi import APIRouter, Depends, HTTPException, status

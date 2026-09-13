@@ -1,19 +1,23 @@
-from app.routers import oauth2, user
+from .. import oauth2
 from .. import models, schemas
 from typing import List
 from fastapi import APIRouter, Depends, HTTPException, status, Response
 from sqlalchemy.orm import Session
 from ..database import engine, get_db
+from sqlalchemy import func
 
 router = APIRouter(
     prefix="/posts",
     tags=["Posts"]
 )
 
-@router.get("/", response_model=list[schemas.Post])
+# @router.get("/", response_model=list[schemas.Post])
+@router.get("/",response_model = list[schemas.PostOut])
 def get_posts(db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user), limit: int = 10, skip: int = 0, search: str | None = ""):
     
-    posts = db.query(models.Post).filter(models.Post.title.contains(search)).limit(limit).offset(skip).all()
+    # posts = db.query(models.Post).filter(models.Post.title.contains(search)).limit(limit).offset(skip).all()
+    
+    posts = db.query(models.Post, func.count(models.VOTE.post_id).label("Votes")).join(models.VOTE, models.VOTE.post_id == models.Post.id, isouter = True).group_by(models.Post.id).filter(models.Post.title.contains(search)).limit(limit).offset(skip).all()
     
     return posts
 

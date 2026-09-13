@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr, ConfigDict
+from pydantic import BaseModel, EmailStr, ConfigDict, conint
 from datetime import datetime
     
 class PostBase(BaseModel):
@@ -12,15 +12,16 @@ class PostCreate(PostBase):
 
 class Post(PostBase):
     id: int
-    # title: str
-    # content: str
-    # published: bool
     created_at: datetime
     owner_id: int
-    owner: "UserOut"  # Use the UserOut schema for the owner field
-    
-    class Config:
-        orm_mode = True
+    owner: "UserOut"
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class PostOut(BaseModel):
+    Post: Post
+    Votes: int 
 
 
 class UserCreate(BaseModel):
@@ -46,3 +47,10 @@ class Token(BaseModel):
     
 class TokenData(BaseModel):
     id: int  | None = None
+    
+class Vote(BaseModel):
+    post_id: int
+    dir: conint(le=1)
+    
+    # when dont need negative number use below
+    # dir: conint(ge=0, le=1)
